@@ -1,4 +1,4 @@
-# HotPocket javascript client
+# HotPocket React Native client
 HotPocket javascript client library to support json and bson protocols in React Native environments.
 
 ### Publish to npm
@@ -14,8 +14,16 @@ npm run publish
 ```sh
 npm install react-native-get-random-values
 ```
-- Modify `app.json`
-```json
+- Import in `index.js`
+```js
+import 'react-native-get-random-values';
+```
+- Install `react-native-libsodium`
+```sh
+npm install react-native-libsodium
+```
+- Add plugin in `app.json`
+```
 {
   ...
   "expo": {

@@ -7,8 +7,16 @@
 ```sh
 npm install react-native-get-random-values
 ```
-- Modify `app.json`
-```json
+- Import in `index.js`
+```js
+import 'react-native-get-random-values';
+```
+- Install `react-native-libsodium`
+```sh
+npm install react-native-libsodium
+```
+- Add plugin in `app.json`
+```
 {
   ...
   "expo": {
