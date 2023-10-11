@@ -33,6 +33,14 @@ npm install react-native-libsodium
 }
 ```
 
+### Trusting ssl certificate
+- If you get an ssl certificate validation error (ex: java.security.cert.CertPathValidatorException). You can add trust to your server certificate via AndroidManifest.xml.
+- A solution can be found [here](https://github.com/axios/axios/issues/5271#issuecomment-1381800275).
+  - You can view the server certificate by following openssl command.
+    ```sh
+    openssl s_client -showcerts -verify 5 -connect dapps-dev.geveo.com:26243 < /dev/null
+    ```
+  - To create the certificate file, Copy the above fetched certificate into a file with `.pem` extension.
 
 ### NPM package
 https://www.npmjs.com/package/react-native-hotpocket-js-client
