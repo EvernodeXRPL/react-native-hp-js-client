@@ -4,9 +4,9 @@
     "keywords": [
         "HotPocket"
     ],
-    "homepage": "https://github.com/HotPocketDev/react-native-hp-js-client",
+    "homepage": "https://github.com/EvernodeXRPL/react-native-hp-js-client",
     "license": "MIT",
-    "version": "0.5.0",
+    "version": "0.5.1",
     "scripts": {
         "build": " mkdir -p dist && cp src/hp-client-lib.js dist/index.js && cp npm-readme.md dist/README.md && ./clean-pkg.sh",
         "publish": "npm run build && npm publish ./dist"

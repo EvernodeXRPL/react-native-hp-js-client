@@ -1,6 +1,6 @@
 # HotPocket React Native client
 
-- [Example React Native usage](https://github.com/HotPocketDev/react-native-hp-js-client/blob/main/example/App.js)
+- [Example React Native usage](https://github.com/EvernodeXRPL/react-native-hp-js-client/blob/main/example/App.js)
 
 ## Prerequisites
 - Install `react-native-get-random-values`
