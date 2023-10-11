@@ -38,7 +38,7 @@ npm install react-native-libsodium
 - A solution can be found [here](https://github.com/axios/axios/issues/5271#issuecomment-1381800275).
   - You can view the server certificate by following openssl command.
     ```sh
-    openssl s_client -showcerts -verify 5 -connect dapps-dev.geveo.com:26243 < /dev/null
+    openssl s_client -showcerts -verify 5 -connect <domain>:<port> < /dev/null
     ```
   - To create the certificate file, Copy the above fetched certificate into a file with `.pem` extension.
 
