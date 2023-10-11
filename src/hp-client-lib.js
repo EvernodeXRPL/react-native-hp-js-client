@@ -1,27 +1,16 @@
 /**
  * HotPocket javascript client library.
  * Version 0.5.0
- * NodeJs: const HotPocket = require('hotpocket-js-client')
- * Browser: window.HotPocket
+ * React Native: import HotPocket from 'react-native-hotpocket-js-client'
  */
 
+import sodium from 'react-native-libsodium';
+import { TextEncoder, TextDecoder } from 'text-encoding';
+import blake3 from 'blake3-js';
+import bson from 'bson';
+import { Buffer } from 'buffer';
+
 (() => {
-
-    // Whether we are in Browser or NodeJs.
-    const isBrowser = !(typeof window === 'undefined');
-
-    // In browser, avoid duplicate initializations.
-    if (isBrowser && window.HotPocket)
-        return;
-
-    // Common data type initialization.
-    if (!isBrowser) {
-        // In browser, these are available in the global scopre. It's just in NodeJs they are in 'util' scope.
-        const util = require("util");
-        TextEncoder = util.TextEncoder;
-        TextDecoder = util.TextDecoder;
-    }
-
     const supportedHpVersion = "0.6.";
     const serverChallengeSize = 16;
     const outputValidationPassThreshold = 0.8;
@@ -32,10 +21,6 @@
     const textDecoder = new TextDecoder();
 
     // External dependency references.
-    let WebSocket = null;
-    let sodium = null;
-    let bson = null;
-    let blake3 = null;
     let logLevel = 0; // 0=info, 1=error
 
     /*--- Included in public interface. ---*/
@@ -68,8 +53,6 @@
     // privateKeyHex: Hex private key with prefix ('ed').
     // Returns 'ed' (237) prefixed binary public/private keys.
     const generateKeys = async (privateKeyHex = null) => {
-
-        await initSodium();
 
         if (!privateKeyHex) {
             const keys = sodium.crypto_sign_keypair();
@@ -127,12 +110,6 @@
             throw "requiredConnectionCount must be greater than 0.";
         if (!opt.connectionTimeoutMs || opt.connectionTimeoutMs == 0)
             throw "Connection timeout must be greater than 0.";
-
-        await initSodium();
-        await initBlake3();
-        initWebSocket();
-        if (opt.protocol == protocols.bson)
-            await initBson();
 
         // Load servers and serverKeys to object keys to avoid duplicates.
 
@@ -424,9 +401,10 @@
 
         // Calcualtes the blake3 hash of all array items.
         const getHash = (arr) => {
-            const hash = blake3.createHash();
-            arr.forEach(item => hash.update(item));
-            return new Uint8Array(hash.digest());
+            const hasher = blake3.newRegular();
+            arr.forEach(item => hasher.update(item));
+            const hash = Buffer.from(hasher.finalize(), 'hex');
+            return new Uint8Array(hash);
         };
 
         // Get root hash of the given merkle hash tree. (called recursively)
@@ -759,7 +737,7 @@
             // Decode the received data buffer.
             // In browser, text(json) mode requires the buffer to be "decoded" to text before JSON parsing.
             const isTextMode = (connectionStatus < 2 || protocol == protocols.json);
-            const data = (isBrowser && isTextMode) ? textDecoder.decode(rcvd.data) : rcvd.data;
+            const data = isTextMode ? textDecoder.decode(rcvd.data) : rcvd.data;
 
             // Deserialized message.
             let m;
@@ -860,10 +838,7 @@
             liblog(0, "Connecting to " + server);
             return new Promise(resolve => {
 
-                ws = isBrowser ? new WebSocket(server) : new WebSocket(server, { rejectUnauthorized: false });
-                if (isBrowser)
-                    ws.binaryType = "arraybuffer";
-
+                ws = new WebSocket(server);
                 handshakeResolver = resolve;
                 ws.addEventListener("error", errorHandler);
                 ws.addEventListener("open", openHandler);
@@ -1110,7 +1085,10 @@
 
             // Input hash is the blake3 hash of the input signature.
             // The input hash can later be used to query input details from the ledger.
-            const inputHash = new Uint8Array(blake3.hash(sigBytes));
+            const hasher = blake3.newRegular();
+            hasher.update(sigBytes);
+            const hash = Buffer.from(hasher.finalize(), 'hex');
+            const inputHash = new Uint8Array(hash);
 
             return {
                 hash: inputHash,
@@ -1247,123 +1225,6 @@
         };
     }
 
-    // Set sodium reference.
-    async function initSodium() {
-
-        if (isBrowser) { // Browser
-            if (!sodium) {
-                sodium = window.sodium || await new Promise(resolve => {
-                    window.sodium = {
-                        onload: async (sodiumRef) => resolve(sodiumRef)
-                    };
-                });
-            }
-        }
-        else { // nodejs
-            if (!sodium)
-                sodium = require("libsodium-wrappers");
-            await sodium.ready;
-        }
-
-        if (!sodium)
-            throw "Sodium reference not found. Please include sodium js lib in browser scripts.";
-    }
-
-    // Set bson reference.
-    let bsonAwaiter = null;
-    async function initBson() {
-        if (bson) { // If already set, do nothing.
-            return;
-        }
-        else if (isBrowser) { // Browser
-            if (!bsonAwaiter) {
-                bsonAwaiter = new Promise(resolve => {
-                    // Trigger a event loop cycle to let the bson lib load.
-                    setTimeout(() => {
-                        // We assume our custom version of bson-browser.js lib is now loaded.
-                        bson = window.BSON;
-                        window.Buffer = window.BSON.BufferPolyfill; // Buffer polyfill exposed in our modified BSON lib.
-                        resolve();
-                    }, 0);
-                });
-            }
-            await bsonAwaiter;
-        }
-        else if (!isBrowser) { // nodejs
-            bson = require("bson");
-        }
-
-        if (!bson)
-            throw "BSON reference not found.";
-    }
-
-    // Set WebSocket reference.
-    function initWebSocket() {
-        if (WebSocket) // If already set, do nothing.
-            return;
-        else if (isBrowser && window.WebSocket) // browser
-            WebSocket = window.WebSocket;
-        else if (!isBrowser) // nodejs
-            WebSocket = require("ws");
-
-        if (!WebSocket)
-            throw "WebSocket reference not found.";
-    }
-
-    // Set blake3 reference.
-    let blake3awaiter = null;
-    async function initBlake3() {
-        if (blake3) { // If already set, do nothing.
-            return;
-        }
-        else if (isBrowser && window.blake3) {// browser (if blake3 already loaded)
-            blake3 = window.blake3;
-        }
-        else if (isBrowser && !window.blake3) { // If blake3 not yet loaded in browser, load it.
-
-            if (!blake3awaiter) {
-                blake3awaiter = new Promise(resolve => {
-
-                    // The Blake3 library we are using (https://github.com/connor4312/blake3) causes issue on Mac/iOS (Safari) due
-                    // to Safari's lack of support for BigInt/BigUint64Array data types as of 25 Apr 2021. Here, we are adding empty
-                    // definitions to avoid complete initialization failure of Blake3 library on Mac/iOS.
-
-                    if (typeof (BigUint64Array) === "undefined")
-                        BigUint64Array = function (v) { };
-
-                    if (typeof (BigInt) === "undefined")
-                        BigInt = function (v) { };
-
-                    // Import the blake3 browser module at runtime.
-                    const url = "https://cdn.jsdelivr.net/npm/blake3@2.1.4/browser-async.js";
-                    import(url).then(module => {
-                        module.default()
-                            .then(blake3ref => {
-                                blake3 = blake3ref;
-                                resolve();
-                            })
-                            .catch(err => {
-                                console.error(err);
-                                resolve();
-                            });
-                    }).catch(err => {
-                        console.error(err);
-                        resolve();
-                    });
-                });
-            }
-
-            await blake3awaiter;
-            return;
-        }
-        else if (!isBrowser) { // nodejs
-            blake3 = require("blake3");
-        }
-
-        if (!blake3)
-            throw "Blake3 reference not found.";
-    }
-
     function setLogLevel(level) {
         logLevel = level;
     }
@@ -1373,24 +1234,12 @@
             console.log(msg);
     }
 
-    if (isBrowser) {
-        window.HotPocket = {
-            generateKeys,
-            createClient,
-            events,
-            notificationChannels,
-            protocols,
-            setLogLevel
-        };
-    }
-    else {
-        module.exports = {
-            generateKeys,
-            createClient,
-            events,
-            notificationChannels,
-            protocols,
-            setLogLevel
-        };
-    }
+    module.exports = {
+        generateKeys,
+        createClient,
+        events,
+        notificationChannels,
+        protocols,
+        setLogLevel
+    };
 })();

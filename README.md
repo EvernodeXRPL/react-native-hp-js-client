@@ -1,5 +1,5 @@
 # HotPocket javascript client
-HotPocket javascript client library to support json and bson protocols in NodeJs and Browser environments.
+HotPocket javascript client library to support json and bson protocols in React Native environments.
 
 ### Publish to npm
 ```
@@ -9,14 +9,22 @@ npm run publish
 ```
 
 ### Testing example client
+- Create sample React Native app and replace App.js.
+- Install `react-native-get-random-values`
+```sh
+npm install react-native-get-random-values
 ```
-cd example
-npm install
-node client.js
+- Modify `app.json`
+```json
+{
+  ...
+  "expo": {
+    ...
+    "plugins": [["react-native-libsodium", {}]]
+  }
+}
 ```
+
 
 ### NPM package
-https://www.npmjs.com/package/hotpocket-js-client
-
-### Browser BSON support
-For BSON support in browser, a slightly modified version of https://www.npmjs.com/package/bson is used. The minified library includes this bson support library as well.
+https://www.npmjs.com/package/react-native-hotpocket-js-client
