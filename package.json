@@ -6,7 +6,7 @@
     ],
     "homepage": "https://github.com/EvernodeXRPL/react-native-hp-js-client",
     "license": "MIT",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "scripts": {
         "build": " mkdir -p dist && cp src/hp-client-lib.js dist/index.js && cp npm-readme.md dist/README.md && ./clean-pkg.sh",
         "publish": "npm run build && npm publish ./dist"
@@ -14,7 +14,7 @@
     "dependencies": {
         "blake3-js": "0.0.5",
         "bson": "4.5.3",
-        "react-native-libsodium": "1.1.1",
+        "libsodium-wrappers": "0.7.13",
         "text-encoding": "^0.7.0"
     },
     "devDependencies": {
