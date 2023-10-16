@@ -4,7 +4,7 @@
  * React Native: import HotPocket from 'react-native-hotpocket-js-client'
  */
 
-import sodium from 'react-native-libsodium';
+import sodium from 'libsodium-wrappers';
 import { TextEncoder, TextDecoder } from 'text-encoding';
 import blake3 from 'blake3-js';
 import bson from 'bson';
