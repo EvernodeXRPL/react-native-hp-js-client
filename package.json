@@ -5,10 +5,10 @@
         "HotPocket"
     ],
     "homepage": "https://github.com/EvernodeXRPL/react-native-hp-js-client",
-    "license": "MIT",
-    "version": "0.5.2",
+    "license": "SEE LICENSE IN https://raw.githubusercontent.com/EvernodeXRPL/evernode-resources/main/license/evernode-license.pdf",
+    "version": "0.5.3",
     "scripts": {
-        "build": " mkdir -p dist && cp src/hp-client-lib.js dist/index.js && cp npm-readme.md dist/README.md && ./clean-pkg.sh",
+        "build": " mkdir -p dist && cp src/hp-client-lib.js dist/index.js && cp npm-readme.md dist/README.md && ./clean-pkg.sh && cp evernode-license.pdf dist/",
         "publish": "npm run build && npm publish ./dist"
     },
     "dependencies": {
