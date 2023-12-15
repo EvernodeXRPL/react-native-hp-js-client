@@ -1,6 +1,6 @@
 {
     "name": "react-native-hotpocket-js-client",
-    "description": "Javascript client library to interact with HotPocket smart contracts..",
+    "description": "Javascript client library to interact with HotPocket smart contracts.",
     "keywords": [
         "HotPocket"
     ],
